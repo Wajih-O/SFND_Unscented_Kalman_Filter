@@ -1,8 +1,13 @@
 #ifndef UKF_H
 #define UKF_H
 
+#include <vector>
 #include "Eigen/Dense"
 #include "measurement_package.h"
+
+
+void normalize_angle_dim(Eigen::VectorXd &input, int dim);
+
 
 class UKF {
  public:
@@ -28,7 +33,9 @@ class UKF {
    * @param delta_t Time between k and k+1 in s
    */
   void Prediction(double delta_t);
-
+  void AugmentedSigmaPoints(Eigen::MatrixXd* Xsig_out);
+  void AugmentedSigmaPoints2(Eigen::MatrixXd* Xsig_out);
+  void SigmaPointPrediction(Eigen::MatrixXd const &Xsig_aug, double delta_t);
   /**
    * Updates the state and the state covariance matrix using a laser measurement
    * @param meas_package The measurement at k+1
@@ -44,6 +51,7 @@ class UKF {
 
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
+  long previous_timestamp_;
 
   // if this is false, laser measurements will be ignored (except for init)
   bool use_laser_;
@@ -60,7 +68,7 @@ class UKF {
   // predicted sigma points matrix
   Eigen::MatrixXd Xsig_pred_;
 
-  // time when the state is true, in us
+  // time when the state is true, in us (previous/last timestamp)
   long long time_us_;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
@@ -95,6 +103,11 @@ class UKF {
 
   // Sigma point spreading parameter
   double lambda_;
+
+  int iter;
+
+  std::vector<double> lidarNISHist;
+  std::vector<double> radarNISHist;
 };
 
 #endif  // UKF_H
