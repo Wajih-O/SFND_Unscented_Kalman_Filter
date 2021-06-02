@@ -8,7 +8,7 @@ const double pi = 3.1415;
 
 struct Ray
 {
-	
+
 	Vect3 origin;
 	double resolution;
 	Vect3 direction;

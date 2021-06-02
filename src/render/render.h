@@ -97,11 +97,11 @@ struct Car
 	Eigen::Quaternionf getQuaternion(float theta)
 	{
 		Eigen::Matrix3f rotation_mat;
-  		rotation_mat << 
+  		rotation_mat <<
   		cos(theta), -sin(theta), 0,
     	sin(theta),  cos(theta), 0,
     	0, 			 0, 		 1;
-    	
+
 		Eigen::Quaternionf q(rotation_mat);
 		return q;
 	}
@@ -115,7 +115,7 @@ struct Car
 		viewer->addCube(Eigen::Vector3f(position.x, position.y, dimensions.z*1/3), orientation, dimensions.x, dimensions.y, dimensions.z*2/3, name+"frame");
 		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0, 0, 0, name+"frame");
 		viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, name+"frame");
-		
+
 
 		// render top of car
 		viewer->addCube(Eigen::Vector3f(position.x, position.y, dimensions.z*5/6), orientation, dimensions.x/2, dimensions.y, dimensions.z*1/3, name + "Top");
@@ -185,6 +185,12 @@ struct Car
 		return (inbetween(xPrime, position.x, dimensions.x / 2) && inbetween(yPrime, position.y, dimensions.y / 2) && inbetween(point.z, position.z + dimensions.z / 3, dimensions.z / 3)) ||
 			(inbetween(xPrime, position.x, dimensions.x / 4) && inbetween(yPrime, position.y, dimensions.y / 2) && inbetween(point.z, position.z + dimensions.z * 5 / 6, dimensions.z / 6));
 
+	}
+
+	void saveNIS(std::string runDirectory) {
+    	std::stringstream prefix;
+    	prefix << runDirectory << "/"<< name; // build car prefix for output file
+    	ukf.saveNIS(prefix.str());
 	}
 };
 

@@ -2,11 +2,18 @@
 #define UKF_H
 
 #include <vector>
+#include <string>
 #include "Eigen/Dense"
 #include "measurement_package.h"
 
 
 void normalize_angle_dim(Eigen::VectorXd &input, int dim);
+
+// A helper to generate output filename for nis
+std::string gen_nis_output_filename(std::string prefix, std::string sensor);
+
+// A helper to save the nis data into a file name
+void save_data(std::string output_path, std::vector<double> data);
 
 
 class UKF {
@@ -34,7 +41,6 @@ class UKF {
    */
   void Prediction(double delta_t);
   void AugmentedSigmaPoints(Eigen::MatrixXd* Xsig_out);
-  void AugmentedSigmaPoints2(Eigen::MatrixXd* Xsig_out);
   void SigmaPointPrediction(Eigen::MatrixXd const &Xsig_aug, double delta_t);
   /**
    * Updates the state and the state covariance matrix using a laser measurement
@@ -47,6 +53,10 @@ class UKF {
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+
+  // Saving NIS data to file
+  void saveNIS(std::string prefix);
 
 
   // initially set to false, set to true in first call of ProcessMeasurement

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 #include "ukf.h"
 #include "Eigen/Dense"
@@ -19,6 +21,26 @@ void normalize_angle_dim(VectorXd &input, int pos) {
       }
     }
 }
+
+
+std::string gen_nis_output_filename(std::string prefix, std::string sensor) {
+    std::stringstream fileName;
+    fileName << prefix << "_"<< sensor << ".csv";
+    std::cout << fileName.str() << std::endl;
+    return fileName.str();
+}
+
+
+void save_data(std::string output_path, std::vector<double> data) {
+  std::ofstream output_file;
+  // std::cout << "saving data into: " << output_path << std::endl;
+  output_file.open(output_path);
+  for (auto value: data) {
+    output_file << value << std::endl;
+  }
+  output_file.close();
+}
+
 
 /**
  * Initializes Unscented Kalman filter
@@ -196,39 +218,6 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   }
 
   *Xsig_out = Xsig_aug;
-}
-
-void UKF::AugmentedSigmaPoints2(MatrixXd* Xsig_out) {
-  // TODO: debug
-  // Create augmented mean vector
-  VectorXd x_aug = VectorXd(n_aug_); // n_aug_ == n_x_ + 2 noise dim
-  x_aug << x_, 0, 0;
-  // Create augmented state covariance
-  MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
-  P_aug.fill(0.0);
-  // create sigma point matrix
-  MatrixXd Xsig_aug = MatrixXd(n_aug_, 2 * n_aug_ + 1);
-  Xsig_aug.col(0) = x_aug;
-
-  // Calculate square root of P
-  MatrixXd A = P_.llt().matrixL();
-  // create augmented state covariance
-  MatrixXd A_aug = MatrixXd(n_aug_, n_aug_);
-
-  A_aug.topLeftCorner(5, 5) = A;
-  A_aug.col(n_x_) << 0, 0, 0, 0, 0, std_a_, 0 ;
-  A_aug.col(n_x_ + 1) << 0, 0, 0, 0, 0, 0, std_yawdd_;
-
-  int col_index = 0;
-  MatrixXd component = sqrt(lambda_ + n_aug_) * A_aug;
-  while (col_index < component.cols()) {
-    Xsig_aug.col(1 + col_index) = x_aug + component.col(col_index);
-    Xsig_aug.col(1 + component.cols() + col_index) = x_aug - component.col(col_index);
-    col_index += 1;
-  }
-
-  *Xsig_out = Xsig_aug;
-
 }
 
 void UKF::SigmaPointPrediction(MatrixXd const &Xsig_aug, double delta_t) {
@@ -429,3 +418,14 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
  }
 
 }
+
+
+// Saving NIS data to file
+  void UKF::saveNIS(std::string prefix) {
+    // Save Radar NIS
+    save_data(gen_nis_output_filename(prefix, "radar"), radarNISHist);
+    // Save Lidar NIS
+    save_data(gen_nis_output_filename(prefix, "lidar"), lidarNISHist);
+
+
+  }
